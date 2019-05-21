@@ -5,9 +5,9 @@ const typeDefs = `
   type User {
     id: ID!
     name: String!
-    age: Int!
-    employed: Boolean!
-    gpa: Float
+    email: String!
+    age: Int
+    posts: [Post]
   }
   
   type Product {
@@ -18,6 +18,13 @@ const typeDefs = `
     rating: Float
     inStock: Boolean!
   }
+  
+  type Post {
+    id: ID!
+    title: String!
+    body: String!
+    published: Boolean!
+  }
 
   type Query {
     hello(name: String): String!
@@ -27,8 +34,16 @@ const typeDefs = `
     gpa: Float
     user: User!
     product: Product!
+    post: Post!
   }
 `;
+
+const postData = {
+  id: 'fd234',
+  title: 'New post',
+  body: 'This is new post',
+  published: false,
+};
 
 // Resolvers
 const resolvers = {
@@ -40,7 +55,7 @@ const resolvers = {
       return 'Paulina';
     },
     age() {
-      return 260;
+      return 280;
     },
     employed() {
       return true;
@@ -49,7 +64,14 @@ const resolvers = {
       return null;
     },
     user() {
-      return { id: '12', name: 'Neevor', age: 120, employed: true };
+      return {
+        id: '12',
+        name: 'Neevor',
+        email: 'neevor@testing.com',
+        age: 120,
+        employed: true,
+        posts: [postData],
+      };
     },
     product() {
       return {
@@ -60,6 +82,9 @@ const resolvers = {
         rating: 4.5,
         inStock: true,
       };
+    },
+    post() {
+      return postData;
     },
   },
 };
