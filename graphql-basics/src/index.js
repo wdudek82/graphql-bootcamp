@@ -21,35 +21,65 @@ const typeDefs = `
   
   type Post {
     id: ID!
+    author: String!
     title: String!
     body: String!
     published: Boolean!
   }
 
   type Query {
-    hello(name: String): String!
+    greeting(name: String): String!
+    add(numbers: [Float!]!): Float!
     name: String!
     age: Int!
     employed: Boolean!
     gpa: Float
     user: User!
     product: Product!
-    post: Post!
+    posts: [Post!]
+    userPosts(author: String!): [Post!]
   }
 `;
 
-const postData = {
-  id: 'fd234',
-  title: 'New post',
-  body: 'This is new post',
-  published: false,
-};
+const postList = [
+  {
+    id: '1',
+    author: 'Neevor',
+    title: 'New post 1',
+    body: 'This is new post 1',
+    published: true,
+  },
+  {
+    id: '2',
+    author: 'Foo',
+    title: 'New post 2',
+    body: 'This is new post 2',
+    published: false,
+  },
+  {
+    id: '3',
+    author: 'Neevor',
+    title: 'New post 3',
+    body: 'This is new post 3',
+    published: false,
+  },
+];
 
 // Resolvers
 const resolvers = {
   Query: {
-    hello(_, { name }) {
+    greeting(parent, args, context, info) {
+      const { name } = args;
+
+      console.log('Parent:', parent);
+      console.log('Args:', args);
+      console.log('Context:', context);
+      console.log('Info:', info);
+
       return `Hello ${name || 'World'}`;
+    },
+    add(_, args) {
+      return args.numbers.reduce((acc, val) => acc + val, 0);
     },
     name() {
       return 'Paulina';
@@ -70,7 +100,7 @@ const resolvers = {
         email: 'neevor@testing.com',
         age: 120,
         employed: true,
-        posts: [postData],
+        posts: postList,
       };
     },
     product() {
@@ -83,8 +113,12 @@ const resolvers = {
         inStock: true,
       };
     },
-    post() {
-      return postData;
+    posts() {
+      return postList;
+    },
+    userPosts(_, { author }) {
+      console.log(author);
+      return postList.filter((post) => post.author === author);
     },
   },
 };
