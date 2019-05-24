@@ -1,7 +1,21 @@
 import { GraphQLServer } from 'graphql-yoga';
+import uuidv4 from 'uuid/v4';
 
 // Type definitions
 const typeDefs = `
+  type Query {
+    users(name: String): [User!]!
+    user(id: ID!): User
+    posts(query: String): [Post!]!
+    comments: [Comment!]!
+    product: Product!
+    userPosts(author: String!): [Post!]
+  }
+
+  type Mutation {
+    createUser(name: String!, email: String!, age: Int): User!
+  }
+
   type User {
     id: ID!
     name: String!
@@ -34,15 +48,6 @@ const typeDefs = `
     releaseYear: Int
     rating: Float
     inStock: Boolean!
-  }
-
-  type Query {
-    users(name: String): [User!]!
-    user(id: ID!): User
-    posts(query: String): [Post!]!
-    comments: [Comment!]!
-    product: Product!
-    userPosts(author: String!): [Post!]
   }
 `;
 
@@ -99,19 +104,19 @@ const commentList = [
     post: '1',
   },
   {
-    id: '1',
+    id: '2',
     text: 'Comment 1B',
     author: '2',
     post: '1',
   },
   {
-    id: '2',
+    id: '3',
     text: 'Comment 2',
     author: '3',
     post: '2',
   },
   {
-    id: '3',
+    id: '4',
     text: 'Comment 3',
     author: '1',
     post: '3',
@@ -166,6 +171,27 @@ const resolvers = {
     },
     userPosts(_, { author }) {
       return postList.filter((post) => post.author === author);
+    },
+  },
+  Mutation: {
+    createUser(parent, args, context, info) {
+      const { name, email, age } = args;
+      const isEmailTaken = userList.some((user) => user.email === email);
+
+      if (isEmailTaken) {
+        throw new Error('Email is taken');
+      }
+
+      const newUser = {
+        id: uuidv4(),
+        name,
+        email,
+        age,
+      };
+
+      userList.push(newUser);
+
+      return newUser;
     },
   },
   Post: {
