@@ -13,7 +13,28 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(name: String!, email: String!, age: Int): User!
+    createUser(data: CreateUserInput): User!
+    createPost(data: CreatePostInput): Post!
+    createComment(data: CreateComment): Comment!
+  }
+  
+  input CreateUserInput {
+    name: String!
+    email: String!
+    age: Int
+  }
+  
+  input CreatePostInput {
+    title: String!
+    body: String!
+    published: Boolean!
+    author: ID!
+  }
+  
+  input CreateCommentInput {
+    text: String!
+    author: ID!
+    post: ID!
   }
 
   type User {
@@ -175,8 +196,7 @@ const resolvers = {
   },
   Mutation: {
     createUser(parent, args, context, info) {
-      const { name, email, age } = args;
-      const isEmailTaken = userList.some((user) => user.email === email);
+      const isEmailTaken = userList.some((user) => user.email === args.email);
 
       if (isEmailTaken) {
         throw new Error('Email is taken');
@@ -184,14 +204,51 @@ const resolvers = {
 
       const newUser = {
         id: uuidv4(),
-        name,
-        email,
-        age,
+        ...args,
       };
 
       userList.push(newUser);
 
       return newUser;
+    },
+    createPost(parent, args, context, info) {
+      const userExists = userList.some((user) => user.id === args.author);
+
+      if (!userExists) {
+        throw new Error('User with this id does not exits.');
+      }
+
+      const newPost = {
+        id: uuidv4(),
+        ...args,
+      };
+
+      postList.push(newPost);
+
+      return newPost;
+    },
+    createComment(parent, args, context, info) {
+      const userExists = userList.some((user) => user.id === args.author);
+      const postExists = postList.some((oldPost) => oldPost.id === args.post);
+      const isPublished = postList.find((p) => p.id === args.post).published;
+
+      if (!userExists) {
+        throw new Error('User with this id does not exists.');
+      }
+      if (!postExists) {
+        throw new Error('Post with this id does not exists.');
+      } else if (!isPublished) {
+        throw new Error('Post is not yet published.');
+      }
+
+      const newComment = {
+        id: uuidv4(),
+        ...args,
+      };
+
+      commentList.push(newComment);
+
+      return newComment;
     },
   },
   Post: {
