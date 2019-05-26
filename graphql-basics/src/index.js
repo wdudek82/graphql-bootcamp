@@ -13,9 +13,11 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(data: CreateUserInput): User!
-    createPost(data: CreatePostInput): Post!
-    createComment(data: CreateComment): Comment!
+    createUser(data: CreateUserInput!): User!
+    deleteUser(id: ID!): User!
+    createPost(data: CreatePostInput!): Post!
+    deletePost(id: ID!): Post!
+    createComment(data: CreateCommentInput!): Comment!
   }
   
   input CreateUserInput {
@@ -72,7 +74,7 @@ const typeDefs = `
   }
 `;
 
-const postList = [
+let postList = [
   {
     id: '1',
     author: '1',
@@ -117,7 +119,7 @@ const userList = [
   },
 ];
 
-const commentList = [
+let commentList = [
   {
     id: '1',
     text: 'Comment 1A',
@@ -196,7 +198,9 @@ const resolvers = {
   },
   Mutation: {
     createUser(parent, args, context, info) {
-      const isEmailTaken = userList.some((user) => user.email === args.email);
+      const isEmailTaken = userList.some(
+        (user) => user.email === args.data.email,
+      );
 
       if (isEmailTaken) {
         throw new Error('Email is taken');
@@ -204,15 +208,39 @@ const resolvers = {
 
       const newUser = {
         id: uuidv4(),
-        ...args,
+        ...args.data,
       };
 
       userList.push(newUser);
 
       return newUser;
     },
+    deleteUser(parent, args, context, info) {
+      const { id } = args;
+      const userIndex = userList.findIndex((user) => user.id === id);
+
+      if (userIndex === -1) throw new Error('User not found.');
+
+      const deletedUsers = userList.splice(userIndex, 1);
+
+      postList = postList.filter((post) => {
+        const match = post.author === id;
+
+        if (match) {
+          commentList = commentList.filter(
+            (comment) => comment.post === match.id,
+          );
+        }
+
+        return !match;
+      });
+
+      commentList = commentList.filter((comment) => comment.author !== id);
+
+      return deletedUsers[0];
+    },
     createPost(parent, args, context, info) {
-      const userExists = userList.some((user) => user.id === args.author);
+      const userExists = userList.some((user) => user.id === args.data.author);
 
       if (!userExists) {
         throw new Error('User with this id does not exits.');
@@ -220,17 +248,33 @@ const resolvers = {
 
       const newPost = {
         id: uuidv4(),
-        ...args,
+        ...args.data,
       };
 
       postList.push(newPost);
 
       return newPost;
     },
+    deletePost(parent, args, context, info) {
+      const postIndex = postList.findIndex((post) => post.id === args.id);
+
+      if (postIndex === -1) throw Error('Post not found.');
+
+      const deletedPost = postList.splice(postIndex, 1);
+
+      commentList = commentList.filter(
+        (comment) => comment.post !== args.id,
+      );
+
+      return deletedPost[0];
+    },
     createComment(parent, args, context, info) {
-      const userExists = userList.some((user) => user.id === args.author);
-      const postExists = postList.some((oldPost) => oldPost.id === args.post);
-      const isPublished = postList.find((p) => p.id === args.post).published;
+      const userExists = userList.some((user) => user.id === args.data.author);
+      const postExists = postList.some(
+        (oldPost) => oldPost.id === args.data.post,
+      );
+      const isPublished = postList.find((p) => p.id === args.data.post)
+        .published;
 
       if (!userExists) {
         throw new Error('User with this id does not exists.');
@@ -243,7 +287,7 @@ const resolvers = {
 
       const newComment = {
         id: uuidv4(),
-        ...args,
+        ...args.data,
       };
 
       commentList.push(newComment);
