@@ -1,0 +1,67 @@
+# This file was generated based on ".graphqlconfig". Do not edit manually.
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Comment {
+    author: User!
+    id: ID!
+    post: Post!
+    text: String!
+}
+
+type Mutation {
+    createComment(data: CreateCommentInput!): Comment!
+    createPost(data: CreatePostInput!): Post!
+    createUser(data: CreateUserInput!): User!
+    deleteComment(id: ID!): Comment!
+    deletePost(id: ID!): Post!
+    deleteUser(id: ID!): User!
+}
+
+type Post {
+    author: User!
+    body: String!
+    comments: [Comment]!
+    id: ID!
+    published: Boolean!
+    title: String!
+}
+
+type Query {
+    comments: [Comment!]!
+    posts(query: String): [Post!]!
+    user(id: ID!): User
+    userPosts(author: String!): [Post!]
+    users(name: String): [User!]!
+}
+
+type User {
+    age: Int
+    comments: [Comment]!
+    email: String!
+    id: ID!
+    name: String!
+    posts: [Post]!
+}
+
+input CreateCommentInput {
+    author: ID!
+    post: ID!
+    text: String!
+}
+
+input CreatePostInput {
+    author: ID!
+    body: String!
+    published: Boolean!
+    title: String!
+}
+
+input CreateUserInput {
+    age: Int
+    email: String!
+    name: String!
+}
