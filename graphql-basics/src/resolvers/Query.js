@@ -16,7 +16,6 @@ export default {
   },
   posts(parent, args, { db }, info) {
     const hasQuery = Object.prototype.hasOwnProperty.call(args, 'query');
-    console.log('context:', db);
 
     if (!hasQuery) return db.posts;
 

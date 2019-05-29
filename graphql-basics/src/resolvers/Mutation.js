@@ -19,6 +19,31 @@ export default {
 
     return newUser;
   },
+  updateUser(parent, args, { db }, info) {
+    const { id, data } = args;
+    const users = db.users.filter((user) => user.id !== id);
+    const userFound = db.users.find((user) => user.id === id);
+
+    console.log('User:', userFound, id);
+
+    if (!userFound) {
+      throw new Error('User not found.');
+    }
+
+    const emailTaken = db.users.some((user) => user.email === data.email);
+    if (emailTaken) {
+      throw new Error('Email taken.');
+    }
+
+    const updUser = {
+      ...userFound,
+      ...data,
+    };
+
+    db.users = [...users, updUser];
+
+    return updUser;
+  },
   deleteUser(parent, args, { db }, info) {
     const { id } = args;
     const userIndex = db.users.findIndex((user) => user.id === id);

@@ -1,5 +1,3 @@
-# This file was generated based on ".graphqlconfig". Do not edit manually.
-
 schema {
     query: Query
     mutation: Mutation
@@ -16,6 +14,7 @@ type Mutation {
     createComment(data: CreateCommentInput!): Comment!
     createPost(data: CreatePostInput!): Post!
     createUser(data: CreateUserInput!): User!
+    updateUser(id: ID!, data: UpdateUserInput!): User!
     deleteComment(id: ID!): Comment!
     deletePost(id: ID!): Post!
     deleteUser(id: ID!): User!
@@ -64,4 +63,10 @@ input CreateUserInput {
     age: Int
     email: String!
     name: String!
+}
+
+input UpdateUserInput {
+    age: Int
+    email: String
+    name: String
 }
