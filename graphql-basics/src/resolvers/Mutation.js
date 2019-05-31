@@ -84,6 +84,24 @@ export default {
 
     return newPost;
   },
+  updatePost(parent, args, { db }, info) {
+    const { id, data } = args;
+    const posts = db.posts.filter((post) => post.id !== id);
+    const postFound = db.posts.find((post) => post.id === id);
+
+    if (!postFound) {
+      throw new Error('No post found.');
+    }
+
+    const updPost = {
+      ...postFound,
+      ...data,
+    };
+
+    db.posts = [...posts, updPost];
+
+    return updPost;
+  },
   deletePost(parent, args, { db }, info) {
     const postIndex = db.posts.findIndex((post) => post.id === args.id);
 
@@ -119,6 +137,24 @@ export default {
     db.comments.push(newComment);
 
     return newComment;
+  },
+  updateComment(parent, args, { db }, info) {
+    const { id, data } = args;
+    const comments = db.comments.filter((comment) => comment.id !== id);
+    const commentFound = db.comments.find((comment) => comment.id === id);
+
+    if (!commentFound) {
+      throw new Error('Comment not found');
+    }
+
+    const updComment = {
+      ...commentFound,
+      ...data,
+    };
+
+    db.comments = [...comments, updComment];
+
+    return updComment;
   },
   deleteComment(parent, args, { db }, info) {
     const commentIndex = db.comments.findIndex(
