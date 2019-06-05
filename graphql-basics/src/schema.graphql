@@ -31,6 +31,16 @@ type Post {
     title: String!
 }
 
+type PostSubscriptionPayload {
+    data: Post!
+    mutation: String!
+}
+
+type Subscription {
+    comment(postId: ID!): Comment!
+    post: PostSubscriptionPayload!
+}
+
 type Query {
     comments: [Comment!]!
     posts(query: String): [Post!]!

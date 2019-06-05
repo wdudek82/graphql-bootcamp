@@ -44,7 +44,7 @@ export default {
 
     return updUser;
   },
-  deleteUser(parent, args, { db }, info) {
+  deleteUser(parent, args, { db, pubsub }, info) {
     const { id } = args;
     const userIndex = db.users.findIndex((user) => user.id === id);
 
@@ -68,7 +68,7 @@ export default {
 
     return deletedUsers[0];
   },
-  createPost(parent, args, { db }, info) {
+  createPost(parent, args, { db, pubsub }, info) {
     const userExists = db.users.some((user) => user.id === args.data.author);
 
     if (!userExists) {
@@ -82,9 +82,18 @@ export default {
 
     db.posts.push(newPost);
 
+    if (args.data.published) {
+      pubsub.publish('post', {
+        post: {
+          mutation: 'CREATED',
+          data: newPost,
+        },
+      });
+    }
+
     return newPost;
   },
-  updatePost(parent, args, { db }, info) {
+  updatePost(parent, args, { db, pubsub }, info) {
     const { id, data } = args;
     const posts = db.posts.filter((post) => post.id !== id);
     const postFound = db.posts.find((post) => post.id === id);
@@ -100,20 +109,38 @@ export default {
 
     db.posts = [...posts, updPost];
 
+    if (updPost.published) {
+      pubsub.publish('post', {
+        post: {
+          mutation: 'UPDATED',
+          data: updPost,
+        },
+      });
+    }
+
     return updPost;
   },
-  deletePost(parent, args, { db }, info) {
+  deletePost(parent, args, { db, pubsub }, info) {
     const postIndex = db.posts.findIndex((post) => post.id === args.id);
 
     if (postIndex === -1) throw Error('Post not found.');
 
-    const deletedPost = db.posts.splice(postIndex, 1);
+    const deletedPost = db.posts.splice(postIndex, 1)[0];
 
     db.comments = db.comments.filter((comment) => comment.post !== args.id);
 
-    return deletedPost[0];
+    if (deletedPost.published) {
+      pubsub.publish('post', {
+        post: {
+          mutation: 'DELETED',
+          data: deletedPost,
+        },
+      });
+    }
+
+    return deletedPost;
   },
-  createComment(parent, args, { db }, info) {
+  createComment(parent, args, { db, pubsub }, info) {
     const userExists = db.users.some((user) => user.id === args.data.author);
     const postExists = db.posts.some(
       (oldPost) => oldPost.id === args.data.post,
@@ -133,6 +160,8 @@ export default {
       id: uuidv4(),
       ...args.data,
     };
+
+    pubsub.publish(`comment ${args.data.post}`, { comment: newComment });
 
     db.comments.push(newComment);
 
