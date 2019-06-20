@@ -1,0 +1,15 @@
+{
+  "name": "Prisma",
+  "schemaPath": "src/generated/prisma.graphql",
+  "extensions": {
+    "endpoints": {
+      "Default GraphQL Endpoint": {
+        "url": "http://localhost:4466",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      }
+    }
+  }
+}
