@@ -4,3 +4,5 @@ node_modules/
 .vscode/
 
 /graphql-prisma/prisma/docker-compose.yml
+/apollo-client/.cache/
+/apollo-client/dist/
